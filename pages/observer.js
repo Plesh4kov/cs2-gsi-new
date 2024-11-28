@@ -1,29 +1,25 @@
 import { useState, useEffect } from "react";
-import io from "socket.io-client";
-
-let socket;
 
 export default function Observer() {
-    const [currentPlayer, setCurrentPlayer] = useState(null);
+    const [observer, setObserver] = useState(null);
 
     useEffect(() => {
-        socket = io();
-        socket.on("update", (data) => {
-            setCurrentPlayer(data.observer.target);
-        });
+        const eventSource = new EventSource("/api/sse");
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            setObserver(data.observer?.target || null);
+        };
+
+        return () => {
+            eventSource.close();
+        };
     }, []);
 
-    if (!currentPlayer) return <div>Загрузка...</div>;
-
-    const cameraURL = `https://vdo.ninja/?view=${currentPlayer}`;
-
     return (
-        <div style={{ width: "100vw", height: "100vh", background: "#000" }}>
-            <iframe
-                src={cameraURL}
-                style={{ width: "100%", height: "100%", border: "none" }}
-                allow="camera; microphone"
-            />
+        <div>
+            <h1>Наблюдатель</h1>
+            {observer ? <p>Текущий игрок: {observer}</p> : <p>Нет наблюдателя</p>}
         </div>
     );
 }

@@ -1,35 +1,29 @@
 import { useState, useEffect } from "react";
-import io from "socket.io-client";
-
-let socket;
 
 export default function Home() {
     const [players, setPlayers] = useState([]);
-    const [selectedPlayer, setSelectedPlayer] = useState(null);
 
     useEffect(() => {
-        socket = io();
-        socket.on("update", (data) => {
-            setPlayers(Object.keys(data.players));
-        });
+        const eventSource = new EventSource("/api/sse");
+
+        eventSource.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            setPlayers(Object.keys(data.players || {}));
+        };
+
+        return () => {
+            eventSource.close();
+        };
     }, []);
 
     return (
         <div>
-            <h1>Выберите игрока</h1>
-            <select onChange={(e) => setSelectedPlayer(e.target.value)}>
-                <option value="">-- Выберите игрока --</option>
+            <h1>Список игроков</h1>
+            <ul>
                 {players.map((player) => (
-                    <option key={player} value={player}>
-                        {player}
-                    </option>
+                    <li key={player}>{player}</li>
                 ))}
-            </select>
-            {selectedPlayer && (
-                <a href={`/player/${selectedPlayer}`}>
-                    Подключить веб-камеру для {selectedPlayer}
-                </a>
-            )}
+            </ul>
         </div>
     );
 }
