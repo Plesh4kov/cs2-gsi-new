@@ -12,7 +12,7 @@ export default function Observer() {
 
         fetchData();
 
-        const interval = setInterval(fetchData, 5000); // Обновляем каждые 5 секунд
+        const interval = setInterval(fetchData, 5000); // Запрос каждые 5 секунд
         return () => clearInterval(interval);
     }, []);
 
