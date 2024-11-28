@@ -4,16 +4,16 @@ export default function Home() {
     const [players, setPlayers] = useState([]);
 
     useEffect(() => {
-        const eventSource = new EventSource("/api/sse");
-
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        const fetchData = async () => {
+            const response = await fetch("/api/sse");
+            const data = await response.json();
             setPlayers(Object.keys(data.players || {}));
         };
 
-        return () => {
-            eventSource.close();
-        };
+        fetchData();
+
+        const interval = setInterval(fetchData, 5000); // Обновляем каждые 5 секунд
+        return () => clearInterval(interval);
     }, []);
 
     return (

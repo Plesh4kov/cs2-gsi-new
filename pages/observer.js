@@ -4,16 +4,16 @@ export default function Observer() {
     const [observer, setObserver] = useState(null);
 
     useEffect(() => {
-        const eventSource = new EventSource("/api/sse");
-
-        eventSource.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        const fetchData = async () => {
+            const response = await fetch("/api/sse");
+            const data = await response.json();
             setObserver(data.observer?.target || null);
         };
 
-        return () => {
-            eventSource.close();
-        };
+        fetchData();
+
+        const interval = setInterval(fetchData, 5000); // Обновляем каждые 5 секунд
+        return () => clearInterval(interval);
     }, []);
 
     return (
