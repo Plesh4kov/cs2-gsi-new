@@ -1,35 +1,27 @@
-let roundData = []; // Хранилище для данных о раундах
+let players = {};
+let observer = null;
 
-export async function POST(request) {
-  try {
-    const jsonData = await request.json(); // Читаем JSON данные
-    console.log('GSI Data Received:', jsonData);
+export default function handler(req, res) {
+    if (req.method === "POST") {
+        const data = req.body;
 
-    // Сохраняем данные в массив
-    roundData.push(jsonData);
+        // Логируем полученные данные
+        console.log("GSI Data Received:", JSON.stringify(data, null, 2));
 
-    // Ограничиваем количество записей (например, 100 последних раундов)
-    if (roundData.length > 100) {
-      roundData.shift(); // Удаляем самый старый элемент
+        // Сохраняем данные игроков
+        if (data.player) {
+            players[data.player.name] = data.player;
+        }
+
+        // Сохраняем данные наблюдателя
+        if (data.observer) {
+            observer = data.observer;
+        }
+
+        res.status(200).json({ message: "GSI data updated" });
+    } else if (req.method === "GET") {
+        res.status(200).json({ players, observer });
+    } else {
+        res.status(405).end(); // Method Not Allowed
     }
-
-    return new Response(JSON.stringify({ message: 'GSI data received' }), {
-      status: 200,
-    });
-  } catch (error) {
-    console.error('Error processing GSI data:', error);
-    return new Response(JSON.stringify({ error: 'Failed to process GSI data' }), {
-      status: 500,
-    });
-  }
-}
-
-export function GET() {
-  if (roundData.length > 0) {
-    return new Response(JSON.stringify(roundData, null, 2), { status: 200 });
-  } else {
-    return new Response(JSON.stringify({ message: 'No data received yet' }), {
-      status: 404,
-    });
-  }
 }
