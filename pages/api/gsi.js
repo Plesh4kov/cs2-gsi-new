@@ -1,11 +1,8 @@
-let players = {};
-let observer = null;
-
 export default function handler(req, res) {
     if (req.method === "POST") {
         const data = req.body;
 
-        // Логируем полученные данные
+        // Логируем данные
         console.log("GSI Data Received:", JSON.stringify(data, null, 2));
 
         // Сохраняем данные игроков
@@ -18,7 +15,7 @@ export default function handler(req, res) {
             observer = data.observer;
         }
 
-        res.status(200).json({ message: "GSI data updated" });
+        res.status(200).json({ players, observer, raw: data });
     } else if (req.method === "GET") {
         res.status(200).json({ players, observer });
     } else {
